@@ -2,6 +2,23 @@ function deepCopy(obj) {
     return JSON.parse(JSON.stringify(obj))
 }
 
+function getRankFromScore(score, enableABplus) {
+    if (score < 500000) return "D"
+    if (score < 700000) return "C"
+    if (score < 750000) return "B"
+    if (score < 800000) return "BB"
+    if (score < 850000) return "BBB"
+    if (score < 900000) return "A"
+    if (score < 940000) return "AA"
+    if (score < 970000) return "AAA"
+    if (score < 990000) return "S"
+    if (score < 1000000) return "SS"
+    if (score < 1007500) return "SSS"
+    if (score < 1010000) return "SSS+"
+    if (score === 1010000) return enableABplus ? "AB+" : "SSS+"
+    throw new Error("Invalid score")
+}
+
 function mergeAndGeneratePlayerData(htmlTechnical, htmlRating, musicRecord) {
     // プレミアムユーザのみが利用可能
     // Parse HTML
@@ -15,7 +32,7 @@ function mergeAndGeneratePlayerData(htmlTechnical, htmlRating, musicRecord) {
 
     const playerProfile = parseProfileFromTechnical(docTechnical)
     const modifiedMusicRecord = parseTechnical(docTechnical, musicRecord)
-    const playerRatingData = parseRating(docRating, musicRecord)
+    const playerRatingData = parseRating(docRating, modifiedMusicRecord)
 
     const playerData = {
         profile: playerProfile,
@@ -109,14 +126,18 @@ function parseTechnical(doc, musicRecord) {
 
         const update = row.querySelector(".sort_update").textContent
 
+        // TODO: いずれP-SCORE枠に対応してくれたら追加
+
         const songdt = modifiedMusicRecord.find(song => song.id === songID && song.diff === diff)
         if (!songdt) {
             console.warn(`Song ${songID} ${diff} not found`)
             continue
         }
+
         songdt.score = score
         songdt.rank = rank
         songdt.update = update
+        // premiumならレーティング計算してもいいかも
         songdt.lamps.is_fullcombo = is_fullcombo
         songdt.lamps.is_allbreak = is_allbreak
         songdt.lamps.is_fullbell = is_fullbell
@@ -125,7 +146,7 @@ function parseTechnical(doc, musicRecord) {
     return modifiedMusicRecord
 }
 
-function parseRating(doc, musicRecord) {
+function parseRating(doc, modifiedMuiscRecord) {
     const ratingData = {
         best: [],
         new: [],
@@ -145,28 +166,16 @@ function parseRating(doc, musicRecord) {
         const score = Number.parseInt(tds[4].textContent.replaceAll(",", ""))
         if (score === 0) break
 
-        // AB+ (=理論値) は自明であるため省略する
-        const lamps = tds[5].textContent
-        const is_fullcombo = lamps.includes("FC")
-        const is_allbreak = lamps.includes("AB")
-        const is_fullbell = lamps.includes("FB")
-
         const rating = Number.parseFloat(tds[6].textContent)
 
-        const songdt = musicRecord.find(song => song.id === songID && song.diff === diff)
+        const songdt = modifiedMuiscRecord.find(song => song.id === songID && song.diff === diff)
         if (!songdt) {
             console.warn(`Song ${songID} ${diff} not found`)
             continue
         }
 
         const cSongdt = deepCopy(songdt)
-        cSongdt.score = score
         cSongdt.rating = rating
-        cSongdt.lamps = {
-            is_fullcombo: is_fullcombo,
-            is_allbreak: is_allbreak,
-            is_fullbell: is_fullbell,
-        }
 
         ratingData.best.push(cSongdt)
     }
@@ -184,28 +193,16 @@ function parseRating(doc, musicRecord) {
         const score = Number.parseInt(tds[4].textContent.replaceAll(",", ""))
         if (score === 0) break
 
-        // AB+ (=理論値) は自明であるため省略する
-        const lamps = tds[5].textContent
-        const is_fullcombo = lamps.includes("FC")
-        const is_allbreak = lamps.includes("AB")
-        const is_fullbell = lamps.includes("FB")
-
         const rating = Number.parseFloat(tds[6].textContent)
 
-        const songdt = musicRecord.find(song => song.id === songID && song.diff === diff)
+        const songdt = modifiedMuiscRecord.find(song => song.id === songID && song.diff === diff)
         if (!songdt) {
             console.warn(`Song ${songID} ${diff} not found`)
             continue
         }
 
         const cSongdt = deepCopy(songdt)
-        cSongdt.score = score
         cSongdt.rating = rating
-        cSongdt.lamps = {
-            is_fullcombo: is_fullcombo,
-            is_allbreak: is_allbreak,
-            is_fullbell: is_fullbell,
-        }
 
         ratingData.new.push(cSongdt)
     }
@@ -224,18 +221,18 @@ function parseRating(doc, musicRecord) {
         const stars = Number.parseInt(tds[5].textContent)
         if (stars === 0) break
 
-        const rating = Number.parseFloat(tds[6].textContent)
+        const p_rating = Number.parseFloat(tds[6].textContent)
 
-        const songdt = musicRecord.find(song => song.id === songID && song.diff === diff)
+        const songdt = modifiedMuiscRecord.find(song => song.id === songID && song.diff === diff)
         if (!songdt) {
             console.warn(`Song ${songID} ${diff} not found`)
             continue
         }
 
         const cSongdt = deepCopy(songdt)
-        cSongdt.pscore = pscore
-        cSongdt.stars = stars
-        cSongdt.rating = rating
+        cSongdt.p_score = pscore
+        cSongdt.p_star = stars
+        cSongdt.p_rating = p_rating
 
         ratingData.pscore.push(cSongdt)
     }

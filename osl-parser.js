@@ -110,6 +110,7 @@ function parseTechnical(doc, musicRecord) {
     const scoreTableRows = doc.querySelector("#sort_table").querySelector("tbody").querySelectorAll("tr")
     for (const row of scoreTableRows) {
         const titleElement = row.querySelector(".sort_title").querySelector("a")
+        if (titleElement == null) continue
         const hrefSplited = titleElement.href.split("/")
 
         const diff = hrefSplited[hrefSplited.length - 1].slice(0, 3).toUpperCase()
@@ -159,6 +160,7 @@ function parseRating(doc, modifiedMuiscRecord) {
         const tds = row.querySelectorAll("td")
 
         const titleElement = tds[1].querySelector("a")
+        if (titleElement == null) continue
         const hrefSplited = titleElement.href.split("/")
 
         const diff = hrefSplited[hrefSplited.length - 1].slice(0, 3).toUpperCase()
@@ -186,6 +188,7 @@ function parseRating(doc, modifiedMuiscRecord) {
         const tds = row.querySelectorAll("td")
 
         const titleElement = tds[1].querySelector("a")
+        if (titleElement == null) continue
         const hrefSplited = titleElement.href.split("/")
 
         const diff = hrefSplited[hrefSplited.length - 1].slice(0, 3).toUpperCase()
@@ -213,6 +216,7 @@ function parseRating(doc, modifiedMuiscRecord) {
         const tds = row.querySelectorAll("td")
 
         const titleElement = tds[1].querySelector("a")
+        if (titleElement == null) continue
         const hrefSplited = titleElement.href.split("/")
 
         const diff = hrefSplited[hrefSplited.length - 1].slice(0, 3).toUpperCase()

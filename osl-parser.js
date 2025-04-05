@@ -20,17 +20,18 @@ function getRankFromScore(score, enableABplus) {
 }
 
 function mergeAndGeneratePlayerData(htmlTechnical, htmlRating, musicRecord) {
-    // プレミアムユーザのみが利用可能
-    // Parse HTML
     const parser = new DOMParser()
     const docTechnical = parser.parseFromString(htmlTechnical, "text/html")
     const docRating = parser.parseFromString(htmlRating, "text/html")
 
-    if (docTechnical.title === "OngekiScoreLog - 404 Not Found") {
+    if (docTechnical.title === "OngekiScoreLog - 404 Not Found")
         throw new Error("User not found")
-    }
 
     const playerProfile = parseProfileFromTechnical(docTechnical)
+
+    if (!playerProfile.is_premium)
+        throw new Error("Premium user only")
+
     const modifiedMusicRecord = parseTechnical(docTechnical, musicRecord)
     const playerRatingData = parseRating(docRating, modifiedMusicRecord)
 
